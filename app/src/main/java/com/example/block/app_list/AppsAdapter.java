@@ -124,8 +124,13 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
         {
             viewHolder.time.setText("00.00.00");
             for(HashMap<String,String> a : MainActivity.timelist) {
+
                 if (a.containsKey(ApplicationPackageName)) {
+                    long time= System.currentTimeMillis();
+
                     long millis = Long.valueOf(a.get(ApplicationPackageName));
+                    millis=millis-time;
+                  
                     String timer = String.format("%02d:%02d:%02d",
 
                             TimeUnit.MILLISECONDS.toHours(millis),
@@ -164,6 +169,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
                 }
                 else
                 {
+                    viewHolder.time.setText("");
                     ArrayList<HashMap<String,String>> aa =new ArrayList<>();
                     aa.addAll(MainActivity.timelist);
                     for(HashMap<String,String> a : MainActivity.timelist)

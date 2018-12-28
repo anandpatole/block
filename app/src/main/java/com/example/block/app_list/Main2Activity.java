@@ -141,14 +141,18 @@ public class Main2Activity extends AppCompatActivity {
                 hours = hours*3600000;
                 mins = mins*60000;
                 duration = hours+mins;
+                long time= System.currentTimeMillis();
+                time=time+duration;
                 if(duration==0)
                 {
                     Toast.makeText(Main2Activity.this, "Please Select Time", LENGTH_LONG).show();
                 }
+
                 else {
                     Toast.makeText(Main2Activity.this, "Selected Apps are blocked", LENGTH_LONG).show();
                     MainActivity.list=AppsAdapter.appChecked;
                     SharedPreferences prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE);
+
                     ArrayList<HashMap<String, String>> listmap = new ArrayList<>();
                     try {
                         listmap.addAll((Collection<? extends HashMap<String, String>>) ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(new ArrayList<HashMap<String,String>>()))));
@@ -160,7 +164,7 @@ public class Main2Activity extends AppCompatActivity {
                         if(AppsAdapter.newChecked.contains(a))
                         {
                             HashMap<String, String> map = new HashMap<>();
-                            map.put(a, String.valueOf(duration));
+                            map.put(a, String.valueOf(time));
                             listmap.add(map);
                         }
                     }
