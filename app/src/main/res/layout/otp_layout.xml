@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/v"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="@dimen/_100sdp"
+        android:gravity="center_horizontal"
+        android:text="Verification Code"
+        android:textColor="#FFFFFF"
+        android:textSize="@dimen/_20sdp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/v"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="@dimen/_40sdp"
+        android:gravity="center_horizontal"
+        android:text="Please type the verification code below"
+        android:textColor="#FFFFFF"
+        android:textSize="@dimen/_14sdp"
+        android:textStyle="normal" />
+    <com.mukesh.OtpView
+        android:id="@+id/otp_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:layout_centerInParent="true"
+        android:itemBackground="#FFFFFF"
+        android:textColor="@android:color/black"
+        app:itemCount="4"
+        app:lineColor="#000000"
+        app:viewType="line"
+    />
+
+    <TextView
+        android:id="@+id/resend_otp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/otp_view"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="@dimen/_40sdp"
+        android:gravity="center_horizontal"
+        android:text="@string/resend_otp"
+        android:textColor="#FFFFFF"
+        android:textSize="@dimen/_12sdp"
+        android:textStyle="normal" />
+</RelativeLayout>

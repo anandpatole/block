@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.block.app_list">
+
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES"
+        tools:ignore="ProtectedPermissions"></uses-permission>
+    <uses-permission android:name="android.permission.GET_TASKS"/>
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Kuulzz"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name="com.example.block.app_list.SplashScreen"
+            android:theme="@style/Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".Login"
+            android:screenOrientation="portrait"></activity>
+        <activity android:name=".Registration"
+            android:screenOrientation="portrait"></activity>
+        <activity android:name=".OTP"
+            android:screenOrientation="portrait"></activity>
+        <activity android:name="com.example.block.app_list.MainActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.example.block.app_list.Main2Activity"
+            android:theme="@style/Theme.AppCompat.Dialog"
+            android:screenOrientation="portrait"></activity>
+        <service
+            android:name="com.example.block.app_list.MyService"
+            android:exported="false"
+            >
+        </service>
+        <service android:name="com.example.block.app_list.Block_All_Notification"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action   android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+    </application>
+
+</manifest>
