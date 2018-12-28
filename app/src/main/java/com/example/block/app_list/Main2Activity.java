@@ -175,7 +175,8 @@ public class Main2Activity extends AppCompatActivity {
                     }
                     editor.commit();
                     startService(duration);
-                    finishAffinity();
+                   startActivity(new Intent(Main2Activity.this,MainActivity.class));
+                   finish();
                 }
 
             }

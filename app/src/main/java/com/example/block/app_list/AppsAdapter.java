@@ -1,7 +1,9 @@
 package com.example.block.app_list;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.v7.widget.SwitchCompat;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -46,19 +48,19 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
     public static class ViewHolder extends RecyclerView.ViewHolder{
 
         public CardView cardView;
-        public ImageView imageView;
+        public ImageView imageView,timer;
         public TextView textView_App_Name;
         public TextView time;
-        public ToggleButton checkBox;
+        public SwitchCompat checkBox;
 
         public ViewHolder (View view){
 
             super(view);
-
+            timer=view.findViewById(R.id.timer);
             cardView = (CardView) view.findViewById(R.id.card_view);
             imageView = (ImageView) view.findViewById(R.id.imageview);
             textView_App_Name = (TextView) view.findViewById(R.id.Apk_Name);
-            checkBox=(ToggleButton) view.findViewById(R.id.androidCheckBox);
+            checkBox=(SwitchCompat) view.findViewById(R.id.androidCheckBox);
             time=(TextView)view.findViewById(R.id.time);
 
             //textView_App_Package_Name = (TextView) view.findViewById(R.id.Apk_Package_Name);
@@ -90,7 +92,14 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
         viewHolder.imageView.setImageDrawable(drawable);
 
         //Adding click listener on CardView to open clicked application directly from here .
+        viewHolder.timer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                Intent intent2 = new Intent(context1, Main2Activity.class);
+                context1.startActivity(intent2);
+            }
+        });
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -111,6 +120,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
         viewHolder.checkBox.setTag(position);
         viewHolder.time.setTag(position);
         if(MainActivity.list.contains(ApplicationPackageName))
+
         {
             viewHolder.time.setText("00.00.00");
             for(HashMap<String,String> a : MainActivity.timelist) {
@@ -124,11 +134,10 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
                     viewHolder.time.setText(timer);
                 }
             }
-            viewHolder.checkBox.setTextOn("ON");
+            viewHolder.checkBox.setChecked(true);
 
 
         }
-
         viewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

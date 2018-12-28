@@ -28,13 +28,13 @@
 
         <ImageView
             android:id="@+id/imageview"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginBottom="8dp"
-
-            android:layout_marginEnd="8dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_marginStart="8dp"
+
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
             android:src="@mipmap/ic_launcher"
             card_view:layout_constraintBottom_toBottomOf="parent"
             card_view:layout_constraintEnd_toStartOf="@+id/androidCheckBox"
@@ -46,16 +46,16 @@
             android:id="@+id/Apk_Name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:layout_marginStart="4dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginEnd="8dp"
             android:layout_marginLeft="4dp"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp"
             android:layout_toEndOf="@id/imageview"
             android:layout_toRightOf="@id/imageview"
             android:textColor="@color/textColor"
-            android:textSize="16sp"
+            android:textSize="12sp"
 
             card_view:layout_constraintBottom_toBottomOf="parent"
             card_view:layout_constraintEnd_toStartOf="@+id/androidCheckBox"
@@ -63,24 +63,23 @@
             card_view:layout_constraintStart_toEndOf="@+id/imageview"
             card_view:layout_constraintTop_toTopOf="parent" />
 
-        <ToggleButton
+        <android.support.v7.widget.SwitchCompat
             android:id="@+id/androidCheckBox"
-            android:layout_width="26dp"
+            android:layout_width="wrap_content"
             android:layout_height="28dp"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="16dp"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
             android:layout_toEndOf="@id/imageview"
             android:layout_toRightOf="@id/imageview"
             android:checked="false"
             android:padding="20dp"
             android:scaleX="1.25"
             android:scaleY="1.25"
-            android:textColor="#0892d0"
             card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintEnd_toEndOf="parent"
-            card_view:layout_constraintTop_toTopOf="parent" />
+            card_view:layout_constraintEnd_toStartOf="@+id/timer"
+            card_view:layout_constraintTop_toTopOf="parent"
+            card_view:theme="@style/ColorSwitchStyle" />
 
         <TextView
             android:id="@+id/time"
@@ -93,12 +92,24 @@
             android:layout_toEndOf="@id/Apk_Name"
             android:layout_toRightOf="@id/Apk_Name"
             android:textColor="@color/textColor"
-            android:textSize="16sp"
-
+            android:textSize="12sp"
             card_view:layout_constraintBottom_toBottomOf="parent"
             card_view:layout_constraintEnd_toStartOf="@+id/androidCheckBox"
             card_view:layout_constraintHorizontal_bias="0.082"
             card_view:layout_constraintStart_toEndOf="@+id/Apk_Name"
             card_view:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/timer"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginStart="288dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:src="@drawable/ic_alarm"
+            card_view:layout_constraintBottom_toBottomOf="parent"
+            card_view:layout_constraintStart_toStartOf="parent"
+            card_view:layout_constraintTop_toTopOf="parent" />
     </android.support.constraint.ConstraintLayout>
+
 </android.support.v7.widget.CardView>
