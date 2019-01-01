@@ -17,7 +17,9 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -123,20 +125,42 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
 
         {
             viewHolder.time.setText("00.00.00");
-            for(HashMap<String,String> a : MainActivity.timelist) {
+            for(HashMap<String,ArrayList<Long>> a : MainActivity.timelist) {
 
                 if (a.containsKey(ApplicationPackageName)) {
+                    ArrayList<Long> timelist=  a.get(ApplicationPackageName);
+                    long starttime=  timelist.get(0);
+                    long stoptime= timelist.get(1);
                     long time= System.currentTimeMillis();
+                    if(time>starttime && time <stoptime)
+                    {
+                        long temp=  stoptime-time;
+                        String timer = String.format("%02d:%02d:%02d",
 
-                    long millis = Long.valueOf(a.get(ApplicationPackageName));
-                    millis=millis-time;
-                  
-                    String timer = String.format("%02d:%02d:%02d",
+                                TimeUnit.MILLISECONDS.toHours(temp),
+                                TimeUnit.MILLISECONDS.toMinutes(temp) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(temp)), TimeUnit.MILLISECONDS.toSeconds(temp) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(temp)));
 
-                            TimeUnit.MILLISECONDS.toHours(millis),
-                            TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)), TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+                        viewHolder.time.setText(timer);
+                    }
+                    else if(time<starttime)
+                    {
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm");
 
-                    viewHolder.time.setText(timer);
+                        // Create a calendar object that will convert the date and time value in milliseconds to date.
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(starttime);
+                        viewHolder.time.setText("Start on "+formatter.format(calendar.getTime()));
+                    }
+//
+//                    long millis = Long.valueOf(a.get(ApplicationPackageName));
+//                    millis=millis-time;
+//
+//                    String timer = String.format("%02d:%02d:%02d",
+//
+//                            TimeUnit.MILLISECONDS.toHours(millis),
+//                            TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)), TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+//
+//                    viewHolder.time.setText(timer);
                 }
             }
             viewHolder.checkBox.setChecked(true);
@@ -170,9 +194,9 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
                 else
                 {
                     viewHolder.time.setText("");
-                    ArrayList<HashMap<String,String>> aa =new ArrayList<>();
+                    ArrayList<HashMap<String,ArrayList<Long>>> aa =new ArrayList<>();
                     aa.addAll(MainActivity.timelist);
-                    for(HashMap<String,String> a : MainActivity.timelist)
+                    for(HashMap<String,ArrayList<Long>> a : MainActivity.timelist)
                     {
                         a.containsKey(ApplicationPackageName);
                         aa.remove(a);

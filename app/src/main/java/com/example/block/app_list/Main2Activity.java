@@ -1,5 +1,7 @@
 package com.example.block.app_list;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,14 +11,20 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.xw.repo.BubbleSeekBar;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 
 import static android.widget.Toast.LENGTH_LONG;
@@ -25,10 +33,11 @@ public class Main2Activity extends AppCompatActivity {
 
     private Button btntest;
     private TextView timer;
-
+    private int mYear, mMonth, mDay, mHour, mMinute;
     public BubbleSeekBar mseek,hseek;
     public int hours, mins, duration;
-
+    String date="";
+    String time="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +47,7 @@ public class Main2Activity extends AppCompatActivity {
         btntest = (Button) findViewById(R.id.startbtn);
         hseek = (BubbleSeekBar)findViewById(R.id.HourSeek);
         mseek = (BubbleSeekBar)findViewById(R.id.MinSeek);
+        showDatePicker();
         hseek.getConfigBuilder()
                 .min(0)
                 .max(12)
@@ -134,14 +144,33 @@ public class Main2Activity extends AppCompatActivity {
         btntest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 mins= mseek.getProgress();
                 hours=hseek.getProgress();
 
                 hours = hours*3600000;
                 mins = mins*60000;
                 duration = hours+mins;
-                long time= System.currentTimeMillis();
-                time=time+duration;
+
+                ArrayList<Long> aa=new ArrayList<>();
+
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm");
+                String dateString = date+" "+time;
+                try{
+                    //formatting the dateString to convert it into a Date
+                    Date date = sdf.parse(dateString);
+                    System.out.println("Given Time in milliseconds : "+date.getTime());
+
+                    Calendar calendar = Calendar.getInstance();
+                    //Setting the Calendar date and time to the given date and time
+                    calendar.setTime(date);
+                    System.out.println("Given Time in milliseconds : "+calendar.getTimeInMillis());
+                    aa.add(calendar.getTimeInMillis());
+                    aa.add(calendar.getTimeInMillis()+duration);
+
+                }catch(ParseException e){
+                    e.printStackTrace();
+                }
                 if(duration==0)
                 {
                     Toast.makeText(Main2Activity.this, "Please Select Time", LENGTH_LONG).show();
@@ -152,21 +181,20 @@ public class Main2Activity extends AppCompatActivity {
                     MainActivity.list=AppsAdapter.appChecked;
                     SharedPreferences prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE);
 
-                    ArrayList<HashMap<String, String>> listmap = new ArrayList<>();
+                    ArrayList<HashMap<String, ArrayList<Long>>> listmap = new ArrayList<>();
                     try {
-                        listmap.addAll((Collection<? extends HashMap<String, String>>) ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(new ArrayList<HashMap<String,String>>()))));
+                        listmap.addAll((Collection<? extends HashMap<String, ArrayList<Long>>>) ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(new ArrayList<HashMap<String,ArrayList<Long>>>()))));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
                     for (String a: MainActivity.list)
                     {
                         if(AppsAdapter.newChecked.contains(a))
                         {
-                            HashMap<String, String> map = new HashMap<>();
-                            map.put(a, String.valueOf(time));
+                            HashMap<String, ArrayList<Long>> map = new HashMap<>();
+                            map.put(a,aa);
                             listmap.add(map);
-                            //new added
-                            CommonUtils.disableDrawerIcon(a);
                         }
                     }
 
@@ -180,8 +208,8 @@ public class Main2Activity extends AppCompatActivity {
                     }
                     editor.commit();
                     startService(duration);
-                   startActivity(new Intent(Main2Activity.this,MainActivity.class));
-                   finish();
+                    startActivity(new Intent(Main2Activity.this,MainActivity.class));
+                    finish();
                 }
 
             }
@@ -235,5 +263,49 @@ public class Main2Activity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+    public void showDatePicker()
+    {
+        final Calendar c = Calendar.getInstance();
+        mYear = c.get(Calendar.YEAR);
+        mMonth = c.get(Calendar.MONTH);
+        mDay = c.get(Calendar.DAY_OF_MONTH);
+
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker view, int year,
+                                          int monthOfYear, int dayOfMonth) {
+
+                        date =(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
+                        showTimepicker();
+                    }
+                }, mYear, mMonth, mDay);
+        datePickerDialog.show();
+        datePickerDialog.setCancelable(false);
+    }
+
+    public void showTimepicker()
+    {
+        final Calendar c = Calendar.getInstance();
+        mHour = c.get(Calendar.HOUR_OF_DAY);
+        mMinute = c.get(Calendar.MINUTE);
+
+        // Launch Time Picker Dialog
+        TimePickerDialog timePickerDialog = new TimePickerDialog(this,
+                new TimePickerDialog.OnTimeSetListener() {
+
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay,
+                                          int minute) {
+
+                        time =(hourOfDay + ":" + minute);
+                    }
+                }, mHour, mMinute, false);
+        timePickerDialog.show();
+        timePickerDialog.setCancelable(false);
     }
 }

@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
 
     private static final int LOCATION_REQUEST_CODE_PERMISSION = 1001;
     public static ArrayList<String> list;
-    public static ArrayList<HashMap<String, String>> timelist;
+    public static ArrayList<HashMap<String,ArrayList<Long>>> timelist;
     RecyclerView recyclerView;
     RecyclerView.Adapter adapter;
     RecyclerView.LayoutManager recyclerViewLayoutManager;
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
         SharedPreferences prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE);
         try {
             list = (ArrayList<String>) ObjectSerializer.deserialize(prefs.getString("package", ObjectSerializer.serialize(new ArrayList<String>())));
-            timelist = (ArrayList<HashMap<String, String>>) ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(new ArrayList<HashMap<String, String>>())));
+            timelist= (ArrayList<HashMap<String, ArrayList<Long>>>)ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(new ArrayList<HashMap<String,ArrayList<Long>>>())));
         } catch (Exception e) {
             e.printStackTrace();
         }
