@@ -4,10 +4,12 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AppOpsManager;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -17,6 +19,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
@@ -37,6 +40,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -47,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
     public static ArrayList<String> list;
     public static ArrayList<HashMap<String,ArrayList<Long>>> timelist;
     RecyclerView recyclerView;
-    RecyclerView.Adapter adapter;
+    public AppsAdapter adapter;
     RecyclerView.LayoutManager recyclerViewLayoutManager;
     String mobileNo = "", id = "", email = "";
     private String mPermission = Manifest.permission.ACCESS_FINE_LOCATION;
@@ -55,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
     private ProgressDialog pd;
     String CountryID = "";
     String CountryZipCode = "";
-
+    private SearchView searchView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -88,11 +92,13 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
         }
 
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        whiteNotificationBar(recyclerView);
         // Passing the column number 1 to show online one column in each row.
         //recyclerViewLayoutManager = new GridLayoutManager(MainActivity.this, 1);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setNestedScrollingEnabled(false);
-        adapter = new AppsAdapter(MainActivity.this, new ApkInfoExtractor(MainActivity.this).GetAllInstalledApkInfo(), MainActivity.this);
+        List<String> list= new ApkInfoExtractor(MainActivity.this).GetAllInstalledApkInfo();
+        adapter = new AppsAdapter(MainActivity.this,list , MainActivity.this);
         recyclerView.setAdapter(adapter);
         requestUsageStatsPermission();
 
@@ -182,6 +188,30 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.mainmenu, menu);
+
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView) menu.findItem(R.id.action_search)
+                .getActionView();
+        searchView.setSearchableInfo(searchManager
+                .getSearchableInfo(getComponentName()));
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+
+        // listening to search query text change
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // filter recycler view when query submitted
+                adapter.getFilter().filter(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                // filter recycler view when text is changed
+                adapter.getFilter().filter(query);
+                return false;
+            }
+        });
         return true;
     }
 
@@ -190,16 +220,22 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
         // Handle item selection
         switch (item.getItemId()) {
 
-            case R.id.logout: {
+            case R.id.logout:
                 SharedPreferences prefs = getSharedPreferences("user", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.clear();
                 editor.commit();
+                SharedPreferences prefs1 = getSharedPreferences("pin", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor1 = prefs1.edit();
+                editor1.clear();
+                editor1.commit();
                 Intent i = new Intent(MainActivity.this, Login.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(i);
                 return true;
-            }
+
+            case R.id.action_search :
+                return true;
 
 
             default:
@@ -216,6 +252,10 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        if (!searchView.isIconified()) {
+            searchView.setIconified(true);
+            return;
+        }
         SharedPreferences prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE);
         try {
             ArrayList<String> currentTasks = (ArrayList<String>) ObjectSerializer.deserialize(prefs.getString("package", ObjectSerializer.serialize(new ArrayList<String>())));
@@ -243,6 +283,11 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
 
     public void callSendLatLong(final double sLat, final double sLong) {
 
+        if(!NetworkConnectivity.isNetworkAvailable(MainActivity.this))
+        {
+            Toast.makeText(MainActivity.this,"Please Check Your Internet Connection",Toast.LENGTH_SHORT).show();
+            return;
+        }
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "https://www.kuulzz.com/mobileapp/update-lat-long.php";
         pd = new ProgressDialog(MainActivity.this);
@@ -316,6 +361,15 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
                 Log.e("CountryID : ZipCode", CountryID + " : " + CountryZipCode);
                 break;
             }
+        }
+    }
+
+    private void whiteNotificationBar(View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int flags = view.getSystemUiVisibility();
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            view.setSystemUiVisibility(flags);
+            getWindow().setStatusBarColor(Color.WHITE);
         }
     }
 }

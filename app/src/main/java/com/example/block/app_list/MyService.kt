@@ -25,7 +25,12 @@ import android.content.pm.PackageManager
 import com.rvalerio.fgchecker.AppChecker
 import com.example.block.app_list.MainActivity
 import android.content.ComponentName
+import android.util.Log
 import kotlin.collections.HashMap
+import android.app.NotificationManager
+import android.app.NotificationChannel
+
+
 
 
 class MyService : Service() {
@@ -36,9 +41,30 @@ class MyService : Service() {
     internal lateinit var notification: NotificationCompat.Builder
     override fun onCreate() {
         super.onCreate()
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+            startMyOwnForeground()
+        else
+            startForeground(1, Notification())
+    }
 
-        notification = NotificationCompat.Builder(this)
-        notification.setAutoCancel(true)
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun startMyOwnForeground() {
+        val NOTIFICATION_CHANNEL_ID = "example.permanence"
+        val channelName = "Background Service"
+        val chan = NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE)
+        chan.lightColor = Color.BLUE
+        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.createNotificationChannel(chan)
+
+        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        val notification = notificationBuilder.setOngoing(true)
+                .setContentTitle("Kuulzz is running in background")
+                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE)
+                .build()
+        startForeground(2, notification)
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -46,105 +72,183 @@ class MyService : Service() {
         var sharedPreferences = getSharedPreferences("Timer", Context.MODE_PRIVATE)
         var dur = sharedPreferences.getInt("duration", 0)
         startService(Intent(this@MyService, Block_All_Notification::class.java))
-        var list =MainActivity.list
+        val prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
+
+        var    list = ObjectSerializer.deserialize(prefs.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
+        if(list.size==0)
+        {
+            stopForeground(true)
+        }
+
 
 
         var  listchecker = ArrayList<AppChecker>()
+        try {
+            for (i in list.indices) {
 
-        for (i in list.indices) {
-
-            var appChecker = AppChecker()
-
-
-            appChecker.whenAny { process ->
+                var appChecker = AppChecker()
 
 
-                if (process.equals(list[i], ignoreCase = true)) {
+                appChecker.whenAny { process ->
 
 
-                    val prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
-                    var timelis = ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(java.util.ArrayList<HashMap<String, java.util.ArrayList<Long>>>()))) as java.util.ArrayList<HashMap<String, java.util.ArrayList<Long>>>
-                    for ( j in timelis.indices) {
+                    if (process.equals(list[i], ignoreCase = true)) {
 
-                        var a=timelis[j]
-                        if (a.containsKey(list[i])) {
-                            var b=a.get(list[i])
-                            var currentmillis= System.currentTimeMillis()
-                            var startmillis= b!!.get(0)
-                            var endmillis= b.get(1)
-                            if(currentmillis >startmillis && currentmillis <endmillis)
-                            {
-                                var newAdded =AppsAdapter.newChecked
-                                if(newAdded.size>0)
-                                {
-                                    for (i in newAdded.indices) {
-                                        startTimer(newAdded[i], endmillis-startmillis)
+
+                        val prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
+                        var timelis = ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(java.util.ArrayList<HashMap<String, java.util.ArrayList<Long>>>()))) as java.util.ArrayList<HashMap<String, java.util.ArrayList<Long>>>
+                        for (j in timelis.indices) {
+
+                            var a = timelis[j]
+                            if (a.containsKey(list[i])) {
+                                var b = a.get(list[i])
+                                var currentmillis = System.currentTimeMillis()
+                                var startmillis = b!!.get(0)
+                                var endmillis = b.get(1)
+                                if (currentmillis > startmillis && currentmillis < endmillis) {
+                                    // var newAdded = ObjectSerializer.deserialize(prefs.getString("newChecked", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
+
+//                                if(newAdded.size>0)
+//                                {
+//                                    for (i in newAdded.indices) {
+//                                        startTimer(newAdded[i], endmillis-startmillis)
+//                                    }
+//                                }
+//                                else {
+//                                    for (i in MainActivity.list.indices) {
+//                                        startTimer(list[i], endmillis-startmillis)
+//                                    }
+//                                }
+
+                                    //    var  currentTasks = java.util.ArrayList<String>()
+
+//                                val prefs1 = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
+//                                try {
+//                                    currentTasks = ObjectSerializer.deserialize(prefs1.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
+//                                } catch (e: Exception) {
+//                                    e.printStackTrace()
+//                                }
+//                                if(!currentTasks.contains(process))
+//                                {
+//
+//                                    appChecker.stop();
+//                                }
+//                                else {
+//                                    val isAppInstalled = appInstalledOrNot("com.example.thea.app_list")
+//
+//                                    if (isAppInstalled)
+//                                    {
+//                                        //This intent will help you to launch if the package is already installed
+//                                        val LaunchIntent = packageManager.getLaunchIntentForPackage("com.example.thea.app_list")
+//                                        LaunchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//                                        LaunchIntent.putExtra("launch","Y")
+//                                        startActivity(LaunchIntent)
+//
+//                                        Log.e("App Info", "Application is already installed.")
+//                                    }
+////                                    val startMain = Intent(this@MyService, demo::class.java)
+//////                                    startMain.addCategory(Intent.CATEGORY_HOME)
+//////                                    startMain.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//////                                    startActivity(startMain)
+//
+//                                    var activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+//                                    activityManager.killBackgroundProcesses(list[i])
+//                                }
+
+                                    var currentTasks = java.util.ArrayList<String>()
+                                    val prefs1 = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
+                                    try {
+                                        currentTasks = ObjectSerializer.deserialize(prefs1.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
                                     }
-                                }
-                                else {
-                                    for (i in MainActivity.list.indices) {
-                                        startTimer(list[i], endmillis-startmillis)
+                                    if (!currentTasks.contains(process)) {
+
+                                        appChecker.stop();
                                     }
-                                }
+                                    val isAppInstalled = appInstalledOrNot("com.example.thea.app_list")
 
-                                var  currentTasks = java.util.ArrayList<String>()
+                                    if (isAppInstalled) {
+                                        //This intent will help you to launch if the package is already installed
+//                                    val LaunchIntent = packageManager.getLaunchIntentForPackage("com.example.thea.app_list")
+//                                    LaunchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//                                    LaunchIntent.putExtra("launch","Y")
+//                                    startActivity(LaunchIntent)
 
-                                val prefs1 = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
-                                try {
-                                    currentTasks = ObjectSerializer.deserialize(prefs1.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                }
-                                if(!currentTasks.contains(process))
-                                {
+                                        val startMain = Intent(this@MyService, demo::class.java)
+//////                                    startMain.addCategory(Intent.CATEGORY_HOME)
+//////                                    startMain.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        startActivity(startMain)
 
-                                    appChecker.stop();
-                                }
-                                else {
+                                        Log.e("App Info", "Application is already installed.")
+                                    }
+//                                    val startMain = Intent(this@MyService, demo::class.java)
+//////                                    startMain.addCategory(Intent.CATEGORY_HOME)
+//////                                    startMain.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//////                                    startActivity(startMain)
 
-                                    val startMain = Intent(Intent.ACTION_MAIN)
-                                    startMain.addCategory(Intent.CATEGORY_HOME)
-                                    startMain.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    startActivity(startMain)
                                     var activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
                                     activityManager.killBackgroundProcesses(list[i])
-                                }
-                            }
-                            else
-                            {
-                                var  currentTasks = java.util.ArrayList<String>()
-
-                                val prefs1 = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
-                                try {
-                                    currentTasks = ObjectSerializer.deserialize(prefs1.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                }
-                                if(!currentTasks.contains(process))
-                                {
-
+                                } else if (currentmillis > endmillis) {
+//                                var  currentTasks = java.util.ArrayList<String>()
+//
+//                                val prefs1 = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
+//                                try {
+//                                    currentTasks = ObjectSerializer.deserialize(prefs1.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
+//                                } catch (e: Exception) {
+//                                    e.printStackTrace()
+//                                }
+//                                if(!currentTasks.contains(process))
+//                                {
+//
+//                                    appChecker.stop();
+//                                }
                                     appChecker.stop();
+                                    var currentTasks = java.util.ArrayList<String>()
+                                    var timelist: java.util.ArrayList<HashMap<String, ArrayList<Long>>>
+                                    val prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
+                                    try {
+                                        currentTasks = ObjectSerializer.deserialize(prefs.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
+                                        timelist = ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(java.util.ArrayList<HashMap<String, ArrayList<Long>>>()))) as java.util.ArrayList<HashMap<String, ArrayList<Long>>>
+                                        if (currentTasks.contains(process)) {
+
+                                            for (a in timelist) {
+                                                a.containsKey(process)
+                                                timelist.remove(a)
+
+                                            }
+                                            currentTasks.remove(process)
+                                            val editor = prefs.edit()
+                                            editor.putString("package", ObjectSerializer.serialize(currentTasks))
+                                            editor.putString("time", ObjectSerializer.serialize(timelist))
+                                            editor.commit();
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
+
+
                                 }
 
                             }
-
                         }
+
+                        //  activityManager.restartPackage("com.whatsapp")
+
+
                     }
-
-                    //  activityManager.restartPackage("com.whatsapp")
-
-
 
                 }
 
+                        .timeout(1000)
+                        .start(this)
+
+                listchecker.add(appChecker)
             }
-
-                    .timeout(1000)
-                    .start(this)
-
-            listchecker.add(appChecker)
         }
-
+        catch (e: Exception) {
+            e.printStackTrace()
+        }
 
 //            var countDownTimer = object : CountDownTimer(dur.toLong(), 1000) {
 //                override fun onTick(dur: Long) {
@@ -215,11 +319,7 @@ class MyService : Service() {
                     timelist = ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(java.util.ArrayList<HashMap<String, ArrayList<Long>>>()))) as java.util.ArrayList<HashMap<String, ArrayList<Long>>>
                     if(currentTasks.contains(name))
                     {
-//                            val p = getPackageManager()
-//                            val launchIntent = p.getLaunchIntentForPackage(name)
-//                            val className = launchIntent.getComponent()!!.getClassName()
-//                            val componentName = ComponentName(this@MyService, className!!)
-//                            p.setComponentEnabledSetting(componentName,PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+
                         for (a in timelist) {
                             a.containsKey(name)
                             timelist.remove(a)
@@ -264,7 +364,9 @@ class MyService : Service() {
     }
 
     override fun onDestroy() {
-        stopSelf()
+        super.onDestroy()
+
+
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -465,6 +567,26 @@ class MyService : Service() {
 
         }
 
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        val broadcastIntent = Intent(this, BroadcastReceiver::class.java)
+
+        sendBroadcast(broadcastIntent)
+
+    }
+
+    private fun appInstalledOrNot(uri: String): Boolean {
+        val pm = packageManager
+        try {
+            pm.getPackageInfo(uri, PackageManager.GET_ACTIVITIES)
+            return true
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+
+        return false
     }
 }
 

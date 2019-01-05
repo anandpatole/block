@@ -11,10 +11,10 @@
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE"/>
-    <uses-permission android:name="android.permission.INSTALL_PACKAGES"/>
+
 
 
     <application
@@ -24,6 +24,7 @@
         android:label="Kuulzz"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
+        tools:replace="android:label"
         android:theme="@style/AppTheme">
         <activity
             android:name="com.example.block.app_list.SplashScreen"
@@ -40,14 +41,29 @@
             android:screenOrientation="portrait"></activity>
         <activity android:name=".OTP"
             android:screenOrientation="portrait"></activity>
+        <activity android:name="com.example.block.app_list.PassCode"
+            android:screenOrientation="portrait"></activity>
+        <activity android:name=".SetPassCode"
+            android:screenOrientation="portrait"></activity>
+        <activity android:name=".PassCodeOTP"
+            android:screenOrientation="portrait"></activity>
         <activity android:name="com.example.block.app_list.MainActivity"
-            android:screenOrientation="portrait"/>
+
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+        </activity>
         <activity android:name="com.example.block.app_list.Main2Activity"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:screenOrientation="portrait"></activity>
         <service
             android:name="com.example.block.app_list.MyService"
-            android:exported="false"
+            android:enabled="true"
+            android:exported="true"
             >
         </service>
         <service android:name="com.example.block.app_list.Block_All_Notification"
@@ -57,6 +73,14 @@
                 <action   android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+        <receiver
+            android:name=".BroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
+        </receiver>
+        <activity android:name=".demo"></activity>
+
     </application>
 
 </manifest>

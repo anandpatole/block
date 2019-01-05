@@ -6,6 +6,9 @@ import android.content.SharedPreferences;
 import android.support.v7.widget.SwitchCompat;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -24,12 +27,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
+public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> implements Filterable {
 
     Context context1;
     List<String> stringList;
+    List<String> filteredList;
+
     Click listner;
     public static ArrayList<String> appChecked;
+
     public static ArrayList<String> newChecked;
     public interface Click
     {
@@ -43,8 +49,9 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
         newChecked =new ArrayList<>();
         appChecked=MainActivity.list;
         context1 = context;
-        listner=listener;
-        stringList = list;
+        this. listner=listener;
+        this.stringList = list;
+        this.filteredList=list;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
@@ -84,7 +91,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
 
         ApkInfoExtractor apkInfoExtractor = new ApkInfoExtractor(context1);
 
-        final String ApplicationPackageName = (String) stringList.get(position);
+        final String ApplicationPackageName = (String) filteredList.get(position);
         String ApplicationLabelName = apkInfoExtractor.GetAppName(ApplicationPackageName);
         Drawable drawable = apkInfoExtractor.getAppIconByPackageName(ApplicationPackageName);
         viewHolder.textView_App_Name.setText(ApplicationLabelName);
@@ -139,16 +146,18 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
 
                                 TimeUnit.MILLISECONDS.toHours(temp),
                                 TimeUnit.MILLISECONDS.toMinutes(temp) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(temp)), TimeUnit.MILLISECONDS.toSeconds(temp) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(temp)));
+                        viewHolder.time.setVisibility(View.VISIBLE);
 
                         viewHolder.time.setText(timer);
                     }
                     else if(time<starttime)
                     {
-                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm");
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm a");
 
                         // Create a calendar object that will convert the date and time value in milliseconds to date.
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTimeInMillis(starttime);
+                        viewHolder.time.setVisibility(View.VISIBLE);
                         viewHolder.time.setText("Start on "+formatter.format(calendar.getTime()));
                     }
 //
@@ -194,6 +203,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
                 else
                 {
                     viewHolder.time.setText("");
+                    viewHolder.time.setVisibility(View.GONE);
                     ArrayList<HashMap<String,ArrayList<Long>>> aa =new ArrayList<>();
                     aa.addAll(MainActivity.timelist);
                     for(HashMap<String,ArrayList<Long>> a : MainActivity.timelist)
@@ -222,7 +232,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
     @Override
     public int getItemCount(){
 
-        return stringList.size();
+        return filteredList.size();
     }
     @Override
     public long getItemId(int position) {
@@ -232,5 +242,44 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder>{
     @Override
     public int getItemViewType(int position) {
         return position;
+    }
+
+    public Filter getFilter() {
+        Filter filter = new Filter() {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                filteredList=(ArrayList<String>)results.values;
+                notifyDataSetChanged();
+            }
+
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                FilterResults results = new FilterResults();
+                ArrayList<String> FilteredList= new ArrayList<String>();
+                if (constraint == null || constraint.length() == 0) {
+                    // No filter implemented we return all the list
+                    results.values = stringList;
+                    results.count = stringList.size();
+                }
+                else {
+                    for (int i = 0; i < stringList.size(); i++) {
+                        ApkInfoExtractor apkInfoExtractor = new ApkInfoExtractor(context1);
+
+                        final String ApplicationPackageName = (String) stringList.get(i);
+                        String ApplicationLabelName = apkInfoExtractor.GetAppName(ApplicationPackageName);
+
+                        if (ApplicationLabelName.toLowerCase().contains(constraint.toString()))  {
+                            FilteredList.add(ApplicationPackageName);
+                        }
+                    }
+                    results.values = FilteredList;
+                    results.count = FilteredList.size();
+                }
+                return results;
+            }
+        };
+        return filter;
     }
 }

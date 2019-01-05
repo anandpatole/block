@@ -108,6 +108,11 @@ public class Registration extends AppCompatActivity {
     }
 
     public void HttpPOSTRequestWithParameters() {
+        if(!NetworkConnectivity.isNetworkAvailable(Registration.this))
+        {
+            Toast.makeText(Registration.this,"Please Check Your Internet Connection",Toast.LENGTH_SHORT).show();
+            return;
+        }
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://www.kuulzz.com/mobileapp/user-registration.php";
         pd = new ProgressDialog(Registration.this);
@@ -128,8 +133,11 @@ public class Registration extends AppCompatActivity {
                                 SharedPreferences sharedPreferences = getSharedPreferences("user", Context.MODE_PRIVATE);
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
                                 editor.putString("mobile", mobile_t);
+                                editor.putString("email",email_t);
                                 editor.apply();
-                                startActivity(new Intent(Registration.this, OTP.class));
+                            Intent i=    new Intent(Registration.this, OTP.class);
+                            i.putExtra("from","registration");
+                                startActivity(i);
 
                             } else {
                                 Toast.makeText(Registration.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();

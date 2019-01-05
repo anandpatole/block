@@ -5,6 +5,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 import com.xw.repo.BubbleSeekBar;
 
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ public class Main2Activity extends AppCompatActivity {
     public int hours, mins, duration;
     String date="";
     String time="";
+    TextView from_time,to_time;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +50,28 @@ public class Main2Activity extends AppCompatActivity {
         btntest = (Button) findViewById(R.id.startbtn);
         hseek = (BubbleSeekBar)findViewById(R.id.HourSeek);
         mseek = (BubbleSeekBar)findViewById(R.id.MinSeek);
-        showDatePicker();
+        from_time=(TextView)findViewById(R.id.from_time);
+        to_time=(TextView)findViewById(R.id.to_time);
+        from_time.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showTimepicker(from_time);
+            }
+        });
+        to_time.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(from_time.getText().toString().equalsIgnoreCase(""))
+                {
+                    Toast.makeText(Main2Activity.this,"Please Select from time",Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    showTimepicker(to_time);
+                }
+            }
+        });
+       // showDatePicker();
         hseek.getConfigBuilder()
                 .min(0)
                 .max(12)
@@ -145,20 +169,36 @@ public class Main2Activity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                mins= mseek.getProgress();
-                hours=hseek.getProgress();
-
-                hours = hours*3600000;
-                mins = mins*60000;
-                duration = hours+mins;
+                if(to_time.getText().toString().equalsIgnoreCase(""))
+                {
+                    Toast.makeText(Main2Activity.this,"Please Select To Time",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(from_time.getText().toString().equalsIgnoreCase(""))
+                {
+                    Toast.makeText(Main2Activity.this,"Please Select From Time",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+//                mins= mseek.getProgress();
+//                hours=hseek.getProgress();
+//
+//                hours = hours*3600000;
+//                mins = mins*60000;
+//                duration = hours+mins;
 
                 ArrayList<Long> aa=new ArrayList<>();
 
-                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm");
-                String dateString = date+" "+time;
+
+                DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+                Date dates = new Date();
+                date =dateFormat.format(dates);
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm a");
+                String dateString = date+" "+from_time.getText().toString();
+                String dateString1= date+" "+to_time.getText().toString();
                 try{
                     //formatting the dateString to convert it into a Date
                     Date date = sdf.parse(dateString);
+                    Date date1= sdf.parse(dateString1);
                     System.out.println("Given Time in milliseconds : "+date.getTime());
 
                     Calendar calendar = Calendar.getInstance();
@@ -166,17 +206,16 @@ public class Main2Activity extends AppCompatActivity {
                     calendar.setTime(date);
                     System.out.println("Given Time in milliseconds : "+calendar.getTimeInMillis());
                     aa.add(calendar.getTimeInMillis());
-                    aa.add(calendar.getTimeInMillis()+duration);
+                   calendar.setTime(date1);
+                  //  aa.add(calendar.getTimeInMillis()+duration);
+                    aa.add(calendar.getTimeInMillis());
 
                 }catch(ParseException e){
                     e.printStackTrace();
                 }
-                if(duration==0)
-                {
-                    Toast.makeText(Main2Activity.this, "Please Select Time", LENGTH_LONG).show();
-                }
 
-                else {
+
+
                     Toast.makeText(Main2Activity.this, "Selected Apps are blocked", LENGTH_LONG).show();
                     MainActivity.list=AppsAdapter.appChecked;
                     SharedPreferences prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE);
@@ -202,6 +241,7 @@ public class Main2Activity extends AppCompatActivity {
                     SharedPreferences.Editor editor = prefs.edit();
                     try {
                         editor.putString("time", ObjectSerializer.serialize(listmap));
+                        editor.putString("newChecked",ObjectSerializer.serialize(AppsAdapter.newChecked));
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -212,7 +252,7 @@ public class Main2Activity extends AppCompatActivity {
                     finish();
                 }
 
-            }
+
         });
 
         if (!NotificationManagerCompat.getEnabledListenerPackages (getApplicationContext()).contains(getApplicationContext().getPackageName())) {
@@ -236,7 +276,16 @@ public class Main2Activity extends AppCompatActivity {
         editor.apply();
 
         Intent intent = new Intent(this,MyService.class);
-        startService(intent);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            startForegroundService(intent);
+        }
+        else
+        {
+            startService(intent);
+        }
+
 
     }
 
@@ -281,14 +330,14 @@ public class Main2Activity extends AppCompatActivity {
                                           int monthOfYear, int dayOfMonth) {
 
                         date =(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-                        showTimepicker();
+                        showTimepicker(from_time);
                     }
                 }, mYear, mMonth, mDay);
         datePickerDialog.show();
         datePickerDialog.setCancelable(false);
     }
 
-    public void showTimepicker()
+    public void showTimepicker(final TextView Tview)
     {
         final Calendar c = Calendar.getInstance();
         mHour = c.get(Calendar.HOUR_OF_DAY);
@@ -301,8 +350,17 @@ public class Main2Activity extends AppCompatActivity {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay,
                                           int minute) {
+                        String AM_PM ;
+                        if(hourOfDay < 12) {
+                            AM_PM = "AM";
+                        } else {
+                            AM_PM = "PM";
+                        }
+                        boolean isPM = (hourOfDay >= 12);
+                        ((TextView)Tview).setText(String.format("%02d:%02d %s", (hourOfDay == 12 || hourOfDay == 0) ? 12 : hourOfDay % 12, minute, isPM ? "PM" : "AM"));
+                        //((TextView)Tview).setText(hourOfDay + ":" + minute + " " + AM_PM );
+                        time =(hourOfDay + ":" + minute + " "+AM_PM);
 
-                        time =(hourOfDay + ":" + minute);
                     }
                 }, mHour, mMinute, false);
         timePickerDialog.show();

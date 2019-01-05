@@ -70,6 +70,11 @@ public class Login extends AppCompatActivity {
     }
 
     public void HttpPOSTRequestWithParameters() {
+        if(!NetworkConnectivity.isNetworkAvailable(Login.this))
+        {
+            Toast.makeText(Login.this,"Please Check Your Internet Connection",Toast.LENGTH_SHORT).show();
+            return;
+        }
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://www.kuulzz.com/mobileapp/login.php";
         pd = new ProgressDialog(Login.this);
@@ -91,7 +96,9 @@ public class Login extends AppCompatActivity {
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
                                 editor.putString("mobile", mobile_t);
                                 editor.apply();
-                                startActivity(new Intent(Login.this, OTP.class));
+                                Intent i=    new Intent(Login.this, OTP.class);
+                                i.putExtra("from","login");
+                                startActivity(i);
                             } else {
                                 Toast.makeText(Login.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
                             }

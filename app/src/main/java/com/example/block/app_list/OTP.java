@@ -37,10 +37,12 @@ public class OTP extends AppCompatActivity
     String CountryID = "";
     String CountryZipCode = "";
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.otp_layout);
+
         CommonUtils.getCountryZipCode();
         SharedPreferences prefs = getSharedPreferences("user", Context.MODE_PRIVATE);
         try {
@@ -53,7 +55,9 @@ public class OTP extends AppCompatActivity
         otpView.setOtpCompletionListener(new OnOtpCompletionListener() {
             @Override
             public void onOtpCompleted(String s) {
-                callOtpVerificationWs(s);
+
+                    callOtpVerificationWs(s);
+
             }
         });
         resendOtp.setOnClickListener(new View.OnClickListener() {
@@ -65,6 +69,11 @@ public class OTP extends AppCompatActivity
     }
 public void callResendOtpWs()
 {
+    if(!NetworkConnectivity.isNetworkAvailable(OTP.this))
+    {
+        Toast.makeText(OTP.this,"Please Check Your Internet Connection",Toast.LENGTH_SHORT).show();
+        return;
+    }
     RequestQueue queue = Volley.newRequestQueue(this);
     String url = "http://www.kuulzz.com/mobileapp/resend-otp.php";
     pd = new ProgressDialog(OTP.this);
@@ -131,7 +140,11 @@ public void callResendOtpWs()
 }
     public void callOtpVerificationWs(final String otp)
     {
-
+        if(!NetworkConnectivity.isNetworkAvailable(OTP.this))
+        {
+            Toast.makeText(OTP.this,"Please Check Your Internet Connection",Toast.LENGTH_SHORT).show();
+            return;
+        }
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://www.kuulzz.com/mobileapp/otp-verify.php";
         pd = new ProgressDialog(OTP.this);
@@ -161,7 +174,7 @@ public void callResendOtpWs()
                                 editor.putString("email",data.getString("email"));
                                 editor.putString("id",data.getString("id"));
                                 editor.apply();
-                                startActivity(new Intent(OTP.this,MainActivity.class));
+                                startActivity(new Intent(OTP.this,SetPassCode.class));
                                 finishAffinity();
                             }
                             else

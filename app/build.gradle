@@ -48,6 +48,7 @@ dependencies {
     implementation 'com.intuit.sdp:sdp-android:1.0.6'
     implementation 'com.github.mukeshsolanki:android-otpview-pinview:2.0.1'
     implementation 'com.xw.repo:bubbleseekbar:3.16'
+    
 }
 repositories {
     mavenCentral()
