@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -69,8 +71,24 @@ public class PassCode extends AppCompatActivity
                 callForgotPinWs();
             }
         });
-    }
 
+        if (checkBatteryOptimized() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+
+            String name = getString(R.string.app_name);
+            Toast.makeText(PassCode.this, "Battery optimization -> All apps ->"+name+" -> Don't optimize", Toast.LENGTH_LONG).show();
+
+            Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+            startActivity(intent);
+        }
+    }
+    public boolean checkBatteryOptimized() {
+        PowerManager pwrm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        String name = getPackageName();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return !pwrm.isIgnoringBatteryOptimizations(name);
+        }
+        return false;
+    }
     public void callForgotPinWs()
     {
 

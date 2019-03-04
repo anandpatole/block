@@ -96,8 +96,8 @@ public class Registration extends AppCompatActivity {
             email.setError(null);
         }
 
-        if (mobile_t.isEmpty() || mobile_t.length() != 10) {
-            mobile.setError("Enter Valid Mobile Number");
+        if (mobile_t.isEmpty() ) {
+            mobile.setError("Enter Mobile Number");
             valid = false;
         } else {
             mobile.setError(null);

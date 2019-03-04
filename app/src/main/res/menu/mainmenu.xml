@@ -3,6 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item  android:id="@+id/logout"
         android:title="Logout"/>
+    <item android:id="@+id/start_service"
+        android:title="Start Blocking"/>
     <item
         android:id="@+id/action_search"
         android:icon="@android:drawable/ic_menu_search"

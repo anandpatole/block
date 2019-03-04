@@ -39,8 +39,11 @@ public class ApkInfoExtractor {
             ActivityInfo activityInfo = resolveInfo.activityInfo;
 
             if(!isSystemPackage(resolveInfo)){
+                if(!(activityInfo.applicationInfo.packageName.equalsIgnoreCase("com.example.thea.app_list")))
+                {
+                    ApkPackageName.add(activityInfo.applicationInfo.packageName);
+                }
 
-                ApkPackageName.add(activityInfo.applicationInfo.packageName);
             }
         }
 

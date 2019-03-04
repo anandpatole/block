@@ -5,29 +5,33 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
-    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES"
-        tools:ignore="ProtectedPermissions"></uses-permission>
-    <uses-permission android:name="android.permission.GET_TASKS"/>
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+    <uses-permission
+        android:name="android.permission.FORCE_STOP_PACKAGES"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
-
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
-        android:name="MyApplication"
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"
         android:label="Kuulzz"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        tools:replace="android:label"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:replace="android:label">
         <activity
-            android:name="com.example.block.app_list.SplashScreen"
+            android:name=".SplashScreen"
+            android:screenOrientation="portrait"
             android:theme="@style/Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,52 +39,79 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Login"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name=".Registration"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name=".OTP"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.block.app_list.PassCode"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name=".SetPassCode"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name=".PassCodeOTP"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.block.app_list.MainActivity"
+        <activity
+            android:name=".Login"
 
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Registration"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".OTP"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PassCode"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SetPassCode"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PassCodeOTP"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MainActivity"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
+
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.block.app_list.Main2Activity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".Main2Activity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
+
         <service
-            android:name="com.example.block.app_list.MyService"
+            android:name=".MyService"
             android:enabled="true"
-            android:exported="true"
-            >
-        </service>
-        <service android:name="com.example.block.app_list.Block_All_Notification"
+            android:exported="true"></service>
+        <service
+            android:name=".Block_All_Notification"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
-                <action   android:name="android.service.notification.NotificationListenerService" />
+                <action android:name="android.service.notification.NotificationListenerService" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </service>
+
         <receiver
             android:name=".BroadcastReceiver"
             android:enabled="true"
             android:exported="true"
             android:label="RestartServiceWhenStopped">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
         </receiver>
-        <activity android:name=".demo"></activity>
 
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".demo" />
+
+
+        <receiver android:name=".NewAppWidget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/new_app_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

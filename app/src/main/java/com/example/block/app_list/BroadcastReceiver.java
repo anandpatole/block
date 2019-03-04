@@ -12,12 +12,15 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
         {
             context.startForegroundService(new Intent(context, MyService.class));
+
         }
         else
         {
             context.startService(new Intent(context, MyService.class));
+
         }
 
+        context.startService(new Intent(context,Block_All_Notification.class));
 
     }
 }

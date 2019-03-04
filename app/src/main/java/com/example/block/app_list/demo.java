@@ -14,6 +14,12 @@ public class demo  extends AppCompatActivity
     }
 
     @Override
+    protected void onPause() {
+        finish();
+        super.onPause();
+    }
+
+    @Override
     public void onBackPressed() {
         super.onBackPressed();
 

@@ -1,5 +1,7 @@
 package com.example.block.app_list
 
+import android.annotation.SuppressLint
+import android.annotation.TargetApi
 import android.app.*
 import android.content.Context
 import android.content.Intent
@@ -8,7 +10,7 @@ import android.os.Build
 import android.os.CountDownTimer
 import android.os.IBinder
 import android.os.Vibrator
-import android.support.annotation.RequiresApi
+
 import android.support.v4.app.NotificationCompat
 import java.util.concurrent.TimeUnit
 
@@ -29,8 +31,10 @@ import android.util.Log
 import kotlin.collections.HashMap
 import android.app.NotificationManager
 import android.app.NotificationChannel
-
-
+import android.net.Uri
+import android.provider.Settings
+import java.text.ParseException
+import java.text.SimpleDateFormat
 
 
 class MyService : Service() {
@@ -47,7 +51,9 @@ class MyService : Service() {
             startForeground(1, Notification())
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    @SuppressLint("NewApi")
+
     private fun startMyOwnForeground() {
         val NOTIFICATION_CHANNEL_ID = "example.permanence"
         val channelName = "Background Service"
@@ -71,7 +77,11 @@ class MyService : Service() {
 
         var sharedPreferences = getSharedPreferences("Timer", Context.MODE_PRIVATE)
         var dur = sharedPreferences.getInt("duration", 0)
-        startService(Intent(this@MyService, Block_All_Notification::class.java))
+
+
+            startService(Intent(this@MyService, Block_All_Notification::class.java))
+
+
         val prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
 
         var    list = ObjectSerializer.deserialize(prefs.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
@@ -97,141 +107,129 @@ class MyService : Service() {
 
                         val prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
                         var timelis = ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(java.util.ArrayList<HashMap<String, java.util.ArrayList<Long>>>()))) as java.util.ArrayList<HashMap<String, java.util.ArrayList<Long>>>
-                        for (j in timelis.indices) {
+                      var  dayslist = ObjectSerializer.deserialize(prefs.getString("days", ObjectSerializer.serialize(java.util.ArrayList<java.util.HashMap<String, java.util.ArrayList<String>>>()))) as java.util.ArrayList<java.util.HashMap<String, java.util.ArrayList<String>>>
+                        val calendar = Calendar.getInstance()
+                        val date = calendar.time
+                        val todaysDay = SimpleDateFormat("EEE", Locale.ENGLISH).format(date.time)
+                        for(z in dayslist.indices)
+                        {
+                            var sssd=dayslist[z]
+                            if(sssd.containsKey(list[i]))
+                            {
+                              var kdfdkf =sssd.get(list[i])
+                                if (kdfdkf != null) {
+                                    for(a in kdfdkf.indices) {
+                                        if(kdfdkf[a].contains(todaysDay)) {
+                                            for (j in timelis.indices) {
 
-                            var a = timelis[j]
-                            if (a.containsKey(list[i])) {
-                                var b = a.get(list[i])
-                                var currentmillis = System.currentTimeMillis()
-                                var startmillis = b!!.get(0)
-                                var endmillis = b.get(1)
-                                if (currentmillis > startmillis && currentmillis < endmillis) {
-                                    // var newAdded = ObjectSerializer.deserialize(prefs.getString("newChecked", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
+                                                var a = timelis[j]
+                                                if (a.containsKey(list[i])) {
+                                                    var b = a.get(list[i])
+//                                            var currentmillis = System.currentTimeMillis()
+                                                    var startmillis = b!!.get(0)
+                                                    var endmillis = b.get(1)
+                                                    val sdf = SimpleDateFormat("hh:mm")
+                                                    val start = sdf.format(Date(startmillis))
+                                                    val end = sdf.format(Date(endmillis))
+                                                    val current = sdf.format(Date())
+                                                    if (isTimeBetweenTwoTime(start, end, current)) {
+                                                        var currentTasks = java.util.ArrayList<String>()
+                                                        val prefs1 = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
+                                                        try {
+                                                            currentTasks = ObjectSerializer.deserialize(prefs1.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
+                                                        } catch (e: Exception) {
+                                                            e.printStackTrace()
+                                                        }
+                                                        if (!currentTasks.contains(process)) {
 
-//                                if(newAdded.size>0)
-//                                {
-//                                    for (i in newAdded.indices) {
-//                                        startTimer(newAdded[i], endmillis-startmillis)
-//                                    }
-//                                }
-//                                else {
-//                                    for (i in MainActivity.list.indices) {
-//                                        startTimer(list[i], endmillis-startmillis)
-//                                    }
-//                                }
+                                                            appChecker.stop();
+                                                        }
+                                                        val isAppInstalled = appInstalledOrNot("com.example.thea.app_list")
 
-                                    //    var  currentTasks = java.util.ArrayList<String>()
-
-//                                val prefs1 = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
-//                                try {
-//                                    currentTasks = ObjectSerializer.deserialize(prefs1.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
-//                                } catch (e: Exception) {
-//                                    e.printStackTrace()
-//                                }
-//                                if(!currentTasks.contains(process))
-//                                {
+                                                        if (isAppInstalled) {
 //
-//                                    appChecker.stop();
-//                                }
-//                                else {
-//                                    val isAppInstalled = appInstalledOrNot("com.example.thea.app_list")
+                                                            val startMain = Intent(this@MyService, demo::class.java)
+                                                        startMain.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                                            startActivity(startMain)
 //
-//                                    if (isAppInstalled)
-//                                    {
-//                                        //This intent will help you to launch if the package is already installed
-//                                        val LaunchIntent = packageManager.getLaunchIntentForPackage("com.example.thea.app_list")
-//                                        LaunchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//                                        LaunchIntent.putExtra("launch","Y")
-//                                        startActivity(LaunchIntent)
+//                                                            Log.e("App Info", "Application is already installed.")
+                                                        }
+
+
+                                                        var activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                                                        activityManager.killBackgroundProcesses(list[i])
+                                                   }
+// else
+//                                                         {
+//                                                            val contentResolver = contentResolver
+//                                                            val enabledNotificationListeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
 //
-//                                        Log.e("App Info", "Application is already installed.")
-//                                    }
-////                                    val startMain = Intent(this@MyService, demo::class.java)
-//////                                    startMain.addCategory(Intent.CATEGORY_HOME)
-//////                                    startMain.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//////                                    startActivity(startMain)
+//                                                            if (list[i].equals("com.whatsapp", ignoreCase = true)) {
 //
-//                                    var activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-//                                    activityManager.killBackgroundProcesses(list[i])
-//                                }
-
-                                    var currentTasks = java.util.ArrayList<String>()
-                                    val prefs1 = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
-                                    try {
-                                        currentTasks = ObjectSerializer.deserialize(prefs1.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    }
-                                    if (!currentTasks.contains(process)) {
-
-                                        appChecker.stop();
-                                    }
-                                    val isAppInstalled = appInstalledOrNot("com.example.thea.app_list")
-
-                                    if (isAppInstalled) {
-                                        //This intent will help you to launch if the package is already installed
-//                                    val LaunchIntent = packageManager.getLaunchIntentForPackage("com.example.thea.app_list")
-//                                    LaunchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//                                    LaunchIntent.putExtra("launch","Y")
-//                                    startActivity(LaunchIntent)
-
-                                        val startMain = Intent(this@MyService, demo::class.java)
-//////                                    startMain.addCategory(Intent.CATEGORY_HOME)
-//////                                    startMain.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        startActivity(startMain)
-
-                                        Log.e("App Info", "Application is already installed.")
-                                    }
-//                                    val startMain = Intent(this@MyService, demo::class.java)
-//////                                    startMain.addCategory(Intent.CATEGORY_HOME)
-//////                                    startMain.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//////                                    startActivity(startMain)
-
-                                    var activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                                    activityManager.killBackgroundProcesses(list[i])
-                                } else if (currentmillis > endmillis) {
-//                                var  currentTasks = java.util.ArrayList<String>()
+//                                                                if (enabledNotificationListeners == null || !enabledNotificationListeners.contains("com.whatsapp")) {
 //
-//                                val prefs1 = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
-//                                try {
-//                                    currentTasks = ObjectSerializer.deserialize(prefs1.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
-//                                } catch (e: Exception) {
-//                                    e.printStackTrace()
-//                                }
-//                                if(!currentTasks.contains(process))
-//                                {
+//                                                                } else {
+//                                                                    if (list[i].equals("com.whatsapp", ignoreCase = true)) {
 //
-//                                    appChecker.stop();
-//                                }
-                                    appChecker.stop();
-                                    var currentTasks = java.util.ArrayList<String>()
-                                    var timelist: java.util.ArrayList<HashMap<String, ArrayList<Long>>>
-                                    val prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
-                                    try {
-                                        currentTasks = ObjectSerializer.deserialize(prefs.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
-                                        timelist = ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(java.util.ArrayList<HashMap<String, ArrayList<Long>>>()))) as java.util.ArrayList<HashMap<String, ArrayList<Long>>>
-                                        if (currentTasks.contains(process)) {
+//                                                                        val intent = Intent()
+//                                                                        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+//                                                                            intent.action = "android.settings.APP_NOTIFICATION_SETTINGS"
+//                                                                            intent.putExtra("android.provider.extra.APP_PACKAGE", "com.whatsapp")
+//                                                                        } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                                                                            intent.action = "android.settings.APP_NOTIFICATION_SETTINGS"
+//                                                                            intent.putExtra("app_package", "com.whatsapp")
+//                                                                            // intent.putExtra("app_uid",);
+//                                                                        } else {
+//                                                                            intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+//                                                                            intent.addCategory(Intent.CATEGORY_DEFAULT)
+//                                                                            intent.data = Uri.parse("package:" + "com.whatsapp")
+//                                                                        }
+//
+//                                                                        startActivity(intent)
+//                                                                    }
+//                                                                }
+//                                                            }
+//                                                        }
 
-                                            for (a in timelist) {
-                                                a.containsKey(process)
-                                                timelist.remove(a)
+// else if (currentmillis > endmillis) {
+//
+//                                                appChecker.stop();
+//                                                var currentTasks = java.util.ArrayList<String>()
+//                                                var timelist: java.util.ArrayList<HashMap<String, ArrayList<Long>>>
+//                                                val prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE)
+//                                                try {
+//                                                    currentTasks = ObjectSerializer.deserialize(prefs.getString("package", ObjectSerializer.serialize(java.util.ArrayList<String>()))) as java.util.ArrayList<String>
+//                                                    timelist = ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(java.util.ArrayList<HashMap<String, ArrayList<Long>>>()))) as java.util.ArrayList<HashMap<String, ArrayList<Long>>>
+//                                                    if (currentTasks.contains(process)) {
+//
+//                                                        for (a in timelist) {
+//                                                            a.containsKey(process)
+//                                                            timelist.remove(a)
+//
+//                                                        }
+//                                                        currentTasks.remove(process)
+//                                                        val editor = prefs.edit()
+//                                                        editor.putString("package", ObjectSerializer.serialize(currentTasks))
+//                                                        editor.putString("time", ObjectSerializer.serialize(timelist))
+//                                                        editor.commit();
+//                                                    }
+//                                                } catch (e: Exception) {
+//                                                    e.printStackTrace()
+//                                                }
+//
+//
+//                                            }
 
+                                                }
                                             }
-                                            currentTasks.remove(process)
-                                            val editor = prefs.edit()
-                                            editor.putString("package", ObjectSerializer.serialize(currentTasks))
-                                            editor.putString("time", ObjectSerializer.serialize(timelist))
-                                            editor.commit();
                                         }
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
                                     }
-
-
                                 }
 
                             }
                         }
+
+
 
                         //  activityManager.restartPackage("com.whatsapp")
 
@@ -428,7 +426,9 @@ class MyService : Service() {
         private var uniqueID = 71399
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @SuppressLint("NewApi")
+    @TargetApi(Build.VERSION_CODES.O)
+
     private fun createNotificationChannel(channelId: String, channelName: String): String{
         var chan = NotificationChannel(channelId,
                 channelName, NotificationManager.IMPORTANCE_NONE)
@@ -582,11 +582,87 @@ class MyService : Service() {
         try {
             pm.getPackageInfo(uri, PackageManager.GET_ACTIVITIES)
             return true
-        } catch (e: PackageManager.NameNotFoundException) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
 
         return false
+    }
+
+    @Throws(ParseException::class)
+    fun isTimeBetweenTwoTime(argStartTime: String,
+                             argEndTime: String, argCurrentTime: String): Boolean {
+        val reg = "^([0-1][0-9]|2[0-3]):([0-5][0-9])$"
+        //
+        if (argStartTime.matches(reg.toRegex()) && argEndTime.matches(reg.toRegex())
+                && argCurrentTime.matches(reg.toRegex())) {
+            var valid = false
+            // Start Time
+            var startTime: java.util.Date = SimpleDateFormat("HH:mm")
+                    .parse(argStartTime)
+            val startCalendar = Calendar.getInstance()
+            startCalendar.time = startTime
+
+            // Current Time
+            var currentTime: java.util.Date = SimpleDateFormat("HH:mm")
+                    .parse(argCurrentTime)
+            val currentCalendar = Calendar.getInstance()
+            currentCalendar.time = currentTime
+
+            // End Time
+            var endTime: java.util.Date = SimpleDateFormat("HH:mm")
+                    .parse(argEndTime)
+            val endCalendar = Calendar.getInstance()
+            endCalendar.time = endTime
+
+            //
+            if (currentTime.compareTo(endTime) < 0) {
+
+                currentCalendar.add(Calendar.DATE, 1)
+                currentTime = currentCalendar.time
+
+            }
+
+            if (startTime.compareTo(endTime) < 0) {
+
+                startCalendar.add(Calendar.DATE, 1)
+                startTime = startCalendar.time
+
+            }
+            //
+            if (currentTime.before(startTime)) {
+
+                println(" Time is Lesser ")
+
+                valid = false
+            } else {
+
+                if (currentTime.after(endTime)) {
+                    endCalendar.add(Calendar.DATE, 1)
+                    endTime = endCalendar.time
+
+                }
+
+                println("Comparing , Start Time /n $startTime")
+                println("Comparing , End Time /n $endTime")
+                println("Comparing , Current Time /n $currentTime")
+
+                if (currentTime.before(endTime)) {
+                    println("RESULT, Time lies b/w")
+                    valid = true
+                } else {
+                    valid = false
+                    println("RESULT, Time does not lies b/w")
+                }
+
+            }
+            return valid
+
+        } else {
+            throw IllegalArgumentException(
+                    "Not a valid time, expecting HH:MM:SS format")
+        }
+
     }
 }
 

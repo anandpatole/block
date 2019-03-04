@@ -130,8 +130,8 @@ public void callResendOtpWs()
             Map<String, String> mParams = new HashMap<>();
             mParams.put("method","otp_resend");
             mParams.put("mobile",mobileNo);
-            mParams.put("country_zip",CountryZipCode);
-            mParams.put("country_code",CountryID);
+            mParams.put("country_zip",CommonUtils.CountryZipCode);
+            mParams.put("country_code",CommonUtils.CountryID);
 
             return mParams;
         }

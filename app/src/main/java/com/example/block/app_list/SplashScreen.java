@@ -42,24 +42,32 @@ public class SplashScreen extends AppCompatActivity {
                             } else {
                                 SharedPreferences prefs1 = getSharedPreferences("pin", Context.MODE_PRIVATE);
                                 if(prefs1!=null) {
-                                    String pin = prefs1.getString("pin", "");
-                                    if(pin.equalsIgnoreCase(""))
-                                    {
-                                        Intent intent = new Intent(getApplicationContext(),SetPassCode.class);
-                                        startActivity(intent);
-                                        finish();
-                                    }
-                                    else
-                                    {
-                                        Intent intent = new Intent(getApplicationContext(), PassCode.class);
-                                        startActivity(intent);
-                                        finish();
+                                    String id=prefs.getString("id","");
+                                    if(id!=null) {
+                                        if(id.equalsIgnoreCase(""))
+                                        {
+                                            Intent intent = new Intent(getApplicationContext(),Login.class);
+                                            startActivity(intent);
+                                            finish();
+                                        }
+                                        else {
+                                            String pin = prefs1.getString("pin", "");
+                                            if (pin.equalsIgnoreCase("")) {
+                                                Intent intent = new Intent(getApplicationContext(), SetPassCode.class);
+                                                startActivity(intent);
+                                                finish();
+                                            } else {
+                                                Intent intent = new Intent(getApplicationContext(), PassCode.class);
+                                                startActivity(intent);
+                                                finish();
+                                            }
+                                        }
                                     }
 
                                 }
                                 else
                                 {
-                                    Intent intent = new Intent(getApplicationContext(),SetPassCode.class);
+                                    Intent intent = new Intent(getApplicationContext(),Login.class);
                                     startActivity(intent);
                                     finish();
                                 }
@@ -69,6 +77,12 @@ public class SplashScreen extends AppCompatActivity {
 //                            Intent intent = new Intent(getApplicationContext(),MainActivity.class);
 //                                        startActivity(intent);
 //                                       finish();
+                        }
+                        else
+                        {
+                            Intent intent = new Intent(getApplicationContext(),Login.class);
+                            startActivity(intent);
+                            finish();
                         }
 
 

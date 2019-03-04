@@ -5,13 +5,16 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -41,6 +44,9 @@ public class Main2Activity extends AppCompatActivity {
     String date="";
     String time="";
     TextView from_time,to_time;
+    CheckBox mon,tue,wed,thu,fri,sat,sun;
+    CheckBox[] arrraych;
+   public static int flag=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,12 +58,21 @@ public class Main2Activity extends AppCompatActivity {
         mseek = (BubbleSeekBar)findViewById(R.id.MinSeek);
         from_time=(TextView)findViewById(R.id.from_time);
         to_time=(TextView)findViewById(R.id.to_time);
+
         from_time.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showTimepicker(from_time);
             }
         });
+        mon=findViewById(R.id.edit_alarm_mon);
+        tue=findViewById(R.id.edit_alarm_tues);
+        wed=findViewById(R.id.edit_alarm_wed);
+        thu=findViewById(R.id.edit_alarm_thurs);
+        fri=findViewById(R.id.edit_alarm_fri);
+        sat=findViewById(R.id.edit_alarm_sat);
+        sun=findViewById(R.id.edit_alarm_sun);
+        arrraych = new CheckBox[]{mon, tue, wed, thu, fri, sat, sun};
         to_time.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,7 +86,7 @@ public class Main2Activity extends AppCompatActivity {
                 }
             }
         });
-       // showDatePicker();
+        // showDatePicker();
         hseek.getConfigBuilder()
                 .min(0)
                 .max(12)
@@ -179,6 +194,19 @@ public class Main2Activity extends AppCompatActivity {
                     Toast.makeText(Main2Activity.this,"Please Select From Time",Toast.LENGTH_SHORT).show();
                     return;
                 }
+                ArrayList<String> days=new ArrayList<>();
+                for( CheckBox c :arrraych)
+                {
+                    if(c.isChecked())
+                    {
+                        days.add(c.getTag().toString());
+                    }
+                }
+                if(days.size()==0)
+                {
+                    Toast.makeText(Main2Activity.this,"Please Select Days",Toast.LENGTH_SHORT).show();
+                    return;
+                }
 //                mins= mseek.getProgress();
 //                hours=hseek.getProgress();
 //
@@ -189,12 +217,12 @@ public class Main2Activity extends AppCompatActivity {
                 ArrayList<Long> aa=new ArrayList<>();
 
 
-                DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-                Date dates = new Date();
-                date =dateFormat.format(dates);
-                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm a");
-                String dateString = date+" "+from_time.getText().toString();
-                String dateString1= date+" "+to_time.getText().toString();
+//                DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+//                Date dates = new Date();
+//                date =dateFormat.format(dates);
+                SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a");
+                String dateString = from_time.getText().toString();
+                String dateString1=to_time.getText().toString();
                 try{
                     //formatting the dateString to convert it into a Date
                     Date date = sdf.parse(dateString);
@@ -206,8 +234,8 @@ public class Main2Activity extends AppCompatActivity {
                     calendar.setTime(date);
                     System.out.println("Given Time in milliseconds : "+calendar.getTimeInMillis());
                     aa.add(calendar.getTimeInMillis());
-                   calendar.setTime(date1);
-                  //  aa.add(calendar.getTimeInMillis()+duration);
+                    calendar.setTime(date1);
+                    //  aa.add(calendar.getTimeInMillis()+duration);
                     aa.add(calendar.getTimeInMillis());
 
                 }catch(ParseException e){
@@ -216,41 +244,68 @@ public class Main2Activity extends AppCompatActivity {
 
 
 
-                    Toast.makeText(Main2Activity.this, "Selected Apps are blocked", LENGTH_LONG).show();
-                    MainActivity.list=AppsAdapter.appChecked;
-                    SharedPreferences prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE);
+                Toast.makeText(Main2Activity.this, "Selected Apps are blocked", LENGTH_LONG).show();
+                MainActivity.list=AppsAdapter.appChecked;
+                SharedPreferences prefs = getSharedPreferences("packagePref", Context.MODE_PRIVATE);
+                ArrayList<HashMap<String, ArrayList<String>>> daysListMap =new ArrayList<>();
+                ArrayList<HashMap<String, ArrayList<Long>>> listmap = new ArrayList<>();
+                try {
+                    listmap.addAll((Collection<? extends HashMap<String, ArrayList<Long>>>) ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(new ArrayList<HashMap<String,ArrayList<Long>>>()))));
+                    daysListMap.addAll((Collection<? extends HashMap<String, ArrayList<String>>>) ObjectSerializer.deserialize(prefs.getString("days", ObjectSerializer.serialize(new ArrayList<HashMap<String,ArrayList<String>>>()))));
 
-                    ArrayList<HashMap<String, ArrayList<Long>>> listmap = new ArrayList<>();
-                    try {
-                        listmap.addAll((Collection<? extends HashMap<String, ArrayList<Long>>>) ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(new ArrayList<HashMap<String,ArrayList<Long>>>()))));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    for (String a: MainActivity.list)
-                    {
-                        if(AppsAdapter.newChecked.contains(a))
-                        {
-                            HashMap<String, ArrayList<Long>> map = new HashMap<>();
-                            map.put(a,aa);
-                            listmap.add(map);
-                        }
-                    }
-
-
-                    SharedPreferences.Editor editor = prefs.edit();
-                    try {
-                        editor.putString("time", ObjectSerializer.serialize(listmap));
-                        editor.putString("newChecked",ObjectSerializer.serialize(AppsAdapter.newChecked));
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    editor.commit();
-                    startService(duration);
-                    startActivity(new Intent(Main2Activity.this,MainActivity.class));
-                    finish();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+
+                for (String a: MainActivity.list)
+                {
+                    if(AppsAdapter.newChecked.contains(a))
+                    {
+                        HashMap<String,ArrayList<String>> ds=new HashMap<>();
+                        HashMap<String, ArrayList<Long>> map = new HashMap<>();
+                        map.put(a,aa);
+                        ds.put(a,days);
+                        daysListMap.add(ds);
+                        listmap.add(map);
+                    }
+                }
+
+
+                SharedPreferences.Editor editor = prefs.edit();
+                try {
+                    editor.putString("time", ObjectSerializer.serialize(listmap));
+                    editor.putString("newChecked",ObjectSerializer.serialize(AppsAdapter.newChecked));
+                    editor.putString("days",ObjectSerializer.serialize(daysListMap));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                editor.commit();
+                startService(duration);
+                if(flag==0) {
+                    if (AppsAdapter.newChecked.contains("com.whatsapp")) {
+                        Intent intent = new Intent();
+                        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+                            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+                            intent.putExtra("android.provider.extra.APP_PACKAGE", "com.whatsapp");
+                        } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+                            intent.putExtra("app_package", "com.whatsapp");
+                            // intent.putExtra("app_uid",);
+                        } else {
+                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                            intent.addCategory(Intent.CATEGORY_DEFAULT);
+                            intent.setData(Uri.parse("package:" + "com.whatsapp"));
+
+                        }
+                        flag=1;
+                        startActivityForResult(intent,01);
+                        return;
+                    }
+                }
+
+                startActivity(new Intent(Main2Activity.this,MainActivity.class));
+                finish();
+            }
 
 
         });
@@ -365,5 +420,12 @@ public class Main2Activity extends AppCompatActivity {
                 }, mHour, mMinute, false);
         timePickerDialog.show();
         timePickerDialog.setCancelable(false);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        startActivity(new Intent(Main2Activity.this,MainActivity.class));
+        finish();
     }
 }

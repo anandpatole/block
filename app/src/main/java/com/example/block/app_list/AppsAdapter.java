@@ -1,8 +1,12 @@
 package com.example.block.app_list;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 import android.support.v7.widget.SwitchCompat;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -20,11 +24,14 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> implements Filterable {
@@ -59,7 +66,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
         public CardView cardView;
         public ImageView imageView,timer;
         public TextView textView_App_Name;
-        public TextView time;
+        public TextView time,days;
         public SwitchCompat checkBox;
 
         public ViewHolder (View view){
@@ -71,7 +78,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
             textView_App_Name = (TextView) view.findViewById(R.id.Apk_Name);
             checkBox=(SwitchCompat) view.findViewById(R.id.androidCheckBox);
             time=(TextView)view.findViewById(R.id.time);
-
+            days=view.findViewById(R.id.days);
             //textView_App_Package_Name = (TextView) view.findViewById(R.id.Apk_Package_Name);
         }
     }
@@ -94,6 +101,8 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
         final String ApplicationPackageName = (String) filteredList.get(position);
         String ApplicationLabelName = apkInfoExtractor.GetAppName(ApplicationPackageName);
         Drawable drawable = apkInfoExtractor.getAppIconByPackageName(ApplicationPackageName);
+
+
         viewHolder.textView_App_Name.setText(ApplicationLabelName);
 
         //viewHolder.textView_App_Package_Name.setText(ApplicationPackageName);
@@ -105,8 +114,16 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
             @Override
             public void onClick(View v) {
 
-                Intent intent2 = new Intent(context1, Main2Activity.class);
-                context1.startActivity(intent2);
+                if(viewHolder.checkBox.isChecked())
+                {
+                    Intent intent2 = new Intent(context1, Main2Activity.class);
+                    context1.startActivity(intent2);
+                    ((Activity)context1).finish();
+                }
+                else
+                {
+                    Toast.makeText(context1,"Please Activate Switch",Toast.LENGTH_SHORT).show();
+                }
             }
         });
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
@@ -128,54 +145,114 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
         });
         viewHolder.checkBox.setTag(position);
         viewHolder.time.setTag(position);
+        Calendar calendar = Calendar.getInstance();
+        Date date = calendar.getTime();
+        String todaysDay= new SimpleDateFormat("EEE", Locale.ENGLISH).format(date.getTime());
         if(MainActivity.list.contains(ApplicationPackageName))
 
         {
             viewHolder.time.setText("00.00.00");
-            for(HashMap<String,ArrayList<Long>> a : MainActivity.timelist) {
-
+            for(HashMap<String,ArrayList<String>> a : MainActivity.dayslist)
+            {
                 if (a.containsKey(ApplicationPackageName)) {
-                    ArrayList<Long> timelist=  a.get(ApplicationPackageName);
-                    long starttime=  timelist.get(0);
-                    long stoptime= timelist.get(1);
-                    long time= System.currentTimeMillis();
-                    if(time>starttime && time <stoptime)
+                    ArrayList<String> dayslist=  a.get(ApplicationPackageName);
+                    String daystext ="";
+                    String todayinList="N";
+                    for(String ach : dayslist)
                     {
-                        long temp=  stoptime-time;
-                        String timer = String.format("%02d:%02d:%02d",
 
-                                TimeUnit.MILLISECONDS.toHours(temp),
-                                TimeUnit.MILLISECONDS.toMinutes(temp) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(temp)), TimeUnit.MILLISECONDS.toSeconds(temp) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(temp)));
-                        viewHolder.time.setVisibility(View.VISIBLE);
+                        if(ach.contains(todaysDay))
+                        {
+                            todayinList="Y";
+                            for(HashMap<String,ArrayList<Long>> ab : MainActivity.timelist) {
 
-                        viewHolder.time.setText(timer);
+                                if (ab.containsKey(ApplicationPackageName)) {
+                                    ArrayList<Long> timelist=  ab.get(ApplicationPackageName);
+                                    long starttime=  timelist.get(0);
+                                    long stoptime= timelist.get(1);
+
+                                    SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
+
+                                    String start =sdf.format(new  Date(starttime));
+                                    String end = sdf.format(new  Date(stoptime));
+                                    String current = sdf.format(new Date());
+                                    try {
+                                        java.util.Date currentTime = new SimpleDateFormat("hh:mm")
+                                                .parse(current);
+                                        Calendar currentCalendar = Calendar.getInstance();
+                                        currentCalendar.setTime(currentTime);
+
+                                        long currentTme= currentCalendar.getTimeInMillis();
+
+                                      //  long currentTme= currentTime.getTime();
+
+                                        if(isTimeBetweenTwoTime(start,end,current))
+                                        {
+                                            SimpleDateFormat formatter = new SimpleDateFormat("hh:mm a");
+                                            // Create a calendar object that will convert the date and time value in milliseconds to date.
+                                            Calendar calendar1 = Calendar.getInstance();
+                                            Calendar calendar21 =Calendar.getInstance();
+                                            calendar1.setTimeInMillis(starttime);
+                                            calendar21.setTimeInMillis(stoptime);
+                                            viewHolder.time.setVisibility(View.VISIBLE);
+                                            viewHolder.time.setText("Start on "+formatter.format(calendar1.getTime())+" and End on "+formatter.format(calendar21.getTime()));
+                                        }
+                                        else
+                                        {
+                                            SimpleDateFormat formatter = new SimpleDateFormat("hh:mm a");
+                                            // Create a calendar object that will convert the date and time value in milliseconds to date.
+                                            Calendar calendar1 = Calendar.getInstance();
+                                            Calendar calendar21 =Calendar.getInstance();
+                                            calendar1.setTimeInMillis(starttime);
+                                            calendar21.setTimeInMillis(stoptime);
+                                            viewHolder.time.setVisibility(View.VISIBLE);
+                                            viewHolder.time.setText("Start on "+formatter.format(calendar1.getTime())+" and End on "+formatter.format(calendar21.getTime()));
+                                        }
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                            }
+                        }
+                        else {
+                            if(todayinList.equalsIgnoreCase("N"))
+                            {
+                                for (HashMap<String, ArrayList<Long>> ab : MainActivity.timelist) {
+
+                                    if (ab.containsKey(ApplicationPackageName)) {
+                                        ArrayList<Long> timelist = ab.get(ApplicationPackageName);
+                                        long starttime = timelist.get(0);
+                                        long stoptime = timelist.get(1);
+                                        SimpleDateFormat formatter = new SimpleDateFormat("hh:mm a");
+                                        // Create a calendar object that will convert the date and time value in milliseconds to date.
+                                        Calendar calendar1 = Calendar.getInstance();
+                                        Calendar calendar21 = Calendar.getInstance();
+                                        calendar1.setTimeInMillis(starttime);
+                                        calendar21.setTimeInMillis(stoptime);
+                                        viewHolder.time.setVisibility(View.VISIBLE);
+                                        viewHolder.time.setText("Start on " + formatter.format(calendar1.getTime()) + " and End on " + formatter.format(calendar21.getTime()));
+
+                                    }
+                                }
+                            }
+                        }
+                        daystext= daystext + ach + " ";
+
                     }
-                    else if(time<starttime)
-                    {
-                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm a");
+                    viewHolder.days.setVisibility(View.VISIBLE);
+                    viewHolder.days.setText(" Days: "+daystext);
+                    //////
 
-                        // Create a calendar object that will convert the date and time value in milliseconds to date.
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.setTimeInMillis(starttime);
-                        viewHolder.time.setVisibility(View.VISIBLE);
-                        viewHolder.time.setText("Start on "+formatter.format(calendar.getTime()));
-                    }
-//
-//                    long millis = Long.valueOf(a.get(ApplicationPackageName));
-//                    millis=millis-time;
-//
-//                    String timer = String.format("%02d:%02d:%02d",
-//
-//                            TimeUnit.MILLISECONDS.toHours(millis),
-//                            TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)), TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
-//
-//                    viewHolder.time.setText(timer);
                 }
+
+
             }
             viewHolder.checkBox.setChecked(true);
 
 
         }
+
         viewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -202,16 +279,31 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
                 }
                 else
                 {
+                    int flag=0;
                     viewHolder.time.setText("");
                     viewHolder.time.setVisibility(View.GONE);
+                    viewHolder.days.setVisibility(View.GONE);
                     ArrayList<HashMap<String,ArrayList<Long>>> aa =new ArrayList<>();
+                    ArrayList<HashMap<String,ArrayList<String>>> days =new ArrayList<>();
+                    days.addAll(MainActivity.dayslist);
                     aa.addAll(MainActivity.timelist);
+
                     for(HashMap<String,ArrayList<Long>> a : MainActivity.timelist)
                     {
+
                         a.containsKey(ApplicationPackageName);
                         aa.remove(a);
 
                     }
+                    for(HashMap<String,ArrayList<String>> a : MainActivity.dayslist)
+                    {
+                        a.containsKey(ApplicationPackageName);
+                        days.remove(a);
+
+                    }
+
+
+
                     Toast.makeText(context1,"App is Unblocked",Toast.LENGTH_SHORT).show();
                     appChecked.remove(ApplicationPackageName);
                     MainActivity.list=appChecked;
@@ -220,10 +312,30 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
                     try {
                         editor.putString("package", ObjectSerializer.serialize(appChecked));
                         editor.putString("time", ObjectSerializer.serialize(aa));
+                        editor.putString("days",ObjectSerializer.serialize(days));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     editor.commit();
+
+                    if(ApplicationPackageName.equalsIgnoreCase("com.whatsapp")) {
+                        Intent intent = new Intent();
+                        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+                            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+                            intent.putExtra("android.provider.extra.APP_PACKAGE", "com.whatsapp");
+                        } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+                            intent.putExtra("app_package", "com.whatsapp");
+                            // intent.putExtra("app_uid",);
+                        } else {
+                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                            intent.addCategory(Intent.CATEGORY_DEFAULT);
+                            intent.setData(Uri.parse("package:" + "com.whatsapp"));
+                        }
+
+                        context1.startActivity(intent);
+                    }
+
                 }
             }
         });
@@ -281,5 +393,81 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
             }
         };
         return filter;
+    }
+
+    public  boolean isTimeBetweenTwoTime(String argStartTime,
+                                         String argEndTime, String argCurrentTime) throws ParseException {
+        String reg = "^([0-1][0-9]|2[0-3]):([0-5][0-9])$";
+        //
+        if (argStartTime.matches(reg) && argEndTime.matches(reg)
+                && argCurrentTime.matches(reg)) {
+            boolean valid = false;
+            // Start Time
+            java.util.Date startTime = new SimpleDateFormat("HH:mm")
+                    .parse(argStartTime);
+            Calendar startCalendar = Calendar.getInstance();
+            startCalendar.setTime(startTime);
+
+            // Current Time
+            java.util.Date currentTime = new SimpleDateFormat("HH:mm")
+                    .parse(argCurrentTime);
+            Calendar currentCalendar = Calendar.getInstance();
+            currentCalendar.setTime(currentTime);
+
+            // End Time
+            java.util.Date endTime = new SimpleDateFormat("HH:mm")
+                    .parse(argEndTime);
+            Calendar endCalendar = Calendar.getInstance();
+            endCalendar.setTime(endTime);
+
+            //
+            if (currentTime.compareTo(endTime) < 0) {
+
+                currentCalendar.add(Calendar.DATE, 1);
+                currentTime = currentCalendar.getTime();
+
+            }
+
+            if (startTime.compareTo(endTime) < 0) {
+
+                startCalendar.add(Calendar.DATE, 1);
+                startTime = startCalendar.getTime();
+
+            }
+            //
+            if (currentTime.before(startTime)) {
+
+                System.out.println(" Time is Lesser ");
+
+                valid = false;
+            } else {
+
+                if (currentTime.after(endTime)) {
+                    endCalendar.add(Calendar.DATE, 1);
+                    endTime = endCalendar.getTime();
+
+                }
+
+                System.out.println("Comparing , Start Time /n " + startTime);
+                System.out.println("Comparing , End Time /n " + endTime);
+                System.out
+                        .println("Comparing , Current Time /n " + currentTime);
+
+                if (currentTime.before(endTime)) {
+                    System.out.println("RESULT, Time lies b/w");
+                    valid = true;
+                } else {
+                    valid = false;
+                    System.out.println("RESULT, Time does not lies b/w");
+                }
+
+            }
+            return valid;
+
+        } else {
+            throw new IllegalArgumentException(
+                    "Not a valid time, expecting HH:MM:SS format");
+        }
+
     }
 }

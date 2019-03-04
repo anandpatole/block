@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:background="@drawable/gradient"
+    android:background="@drawable/splash"
     android:layout_height="match_parent">
     <LinearLayout
         android:orientation="vertical"
@@ -11,7 +11,7 @@
         android:paddingLeft="24dp"
         android:paddingRight="24dp">
 
-        <ImageView android:src="@mipmap/ic_launcher"
+        <ImageView android:src="@drawable/logo"
             android:layout_width="@dimen/_120sdp"
             android:layout_height="@dimen/_120sdp"
             android:layout_marginBottom="@dimen/_20sdp"
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_20sdp"
             android:layout_marginBottom="@dimen/_20sdp"
-            android:background="@color/white"
+            android:background="@drawable/shape"
             android:padding="@dimen/_10sdp"
             android:textColor="@color/black"
             android:textSize="@dimen/_13sdp"

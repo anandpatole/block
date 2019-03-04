@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
 
     private static final int LOCATION_REQUEST_CODE_PERMISSION = 1001;
     public static ArrayList<String> list;
+    public static ArrayList<HashMap<String,ArrayList<String>>> dayslist;
     public static ArrayList<HashMap<String,ArrayList<Long>>> timelist;
     RecyclerView recyclerView;
     public AppsAdapter adapter;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
         try {
             list = (ArrayList<String>) ObjectSerializer.deserialize(prefs.getString("package", ObjectSerializer.serialize(new ArrayList<String>())));
             timelist= (ArrayList<HashMap<String, ArrayList<Long>>>)ObjectSerializer.deserialize(prefs.getString("time", ObjectSerializer.serialize(new ArrayList<HashMap<String,ArrayList<Long>>>())));
+            dayslist=(ArrayList<HashMap<String, ArrayList<String>>>)ObjectSerializer.deserialize(prefs.getString("days", ObjectSerializer.serialize(new ArrayList<HashMap<String,ArrayList<String>>>())));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -178,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getGps();
                 } else {
-                    Toast.makeText(MainActivity.this, getString(R.string.str_allow_location_permission), Toast.LENGTH_SHORT).show();
+                    // Toast.makeText(MainActivity.this, getString(R.string.str_allow_location_permission), Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
@@ -232,11 +234,25 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
                 Intent i = new Intent(MainActivity.this, Login.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(i);
+                finish();
                 return true;
 
             case R.id.action_search :
                 return true;
-
+            case R.id.start_service:
+                Intent intent = new Intent(this,MyService.class);
+                Intent intent1=new Intent(this,Block_All_Notification.class);
+                Toast.makeText(MainActivity.this,"Started Blocking",Toast.LENGTH_SHORT).show();
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                {
+                    startForegroundService(intent);
+                }
+                else
+                {
+                    startService(intent);
+                }
+                startService(intent1);
+                return  true;
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -290,9 +306,9 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
         }
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "https://www.kuulzz.com/mobileapp/update-lat-long.php";
-        pd = new ProgressDialog(MainActivity.this);
-        pd.setMessage("Please Wait......");
-        pd.show();
+//        pd = new ProgressDialog(MainActivity.this);
+//        pd.setMessage("Please Wait......");
+//        pd.show();
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {
                     @Override
@@ -300,7 +316,9 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
 
                         try {
                             if (pd != null) {
-                                pd.dismiss();
+                                if(pd.isShowing()) {
+                                    pd.dismiss();
+                                }
                             }
                             JSONObject jsonObject = new JSONObject(response);
                             String status = jsonObject.getString("status");
@@ -319,7 +337,9 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         if (pd != null) {
-                            pd.dismiss();
+                            if(pd.isShowing()) {
+                                pd.dismiss();
+                            }
                         }
                         Toast.makeText(MainActivity.this, "Something Went Wrong.Please Try Again!", Toast.LENGTH_SHORT).show();
 

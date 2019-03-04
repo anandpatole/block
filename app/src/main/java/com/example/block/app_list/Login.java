@@ -4,7 +4,10 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
@@ -45,6 +48,7 @@ public class Login extends AppCompatActivity {
         login_in = (Button) findViewById(R.id.btn_login);
         mobile = (EditText) findViewById(R.id.input_mobile);
         initViews();
+
     }
 
     public void initViews() {
@@ -140,8 +144,8 @@ public class Login extends AppCompatActivity {
         mobile_t = mobile.getText().toString();
 
 
-        if (mobile_t.isEmpty() || mobile_t.length() != 10) {
-            mobile.setError("Enter Valid Mobile Number");
+        if (mobile_t.isEmpty()) {
+            mobile.setError("Enter Mobile Number");
             valid = false;
         } else {
             mobile.setError(null);
