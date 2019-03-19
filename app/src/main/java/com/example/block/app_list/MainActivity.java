@@ -392,4 +392,9 @@ public class MainActivity extends AppCompatActivity implements AppsAdapter.Click
             getWindow().setStatusBarColor(Color.WHITE);
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        adapter.onActivityResult(requestCode, resultCode, data);
+    }
 }

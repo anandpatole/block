@@ -5,6 +5,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -281,27 +282,33 @@ public class Main2Activity extends AppCompatActivity {
                 }
                 editor.commit();
                 startService(duration);
-                if(flag==0) {
-                    if (AppsAdapter.newChecked.contains("com.whatsapp")) {
-                        Intent intent = new Intent();
-                        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
-                            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-                            intent.putExtra("android.provider.extra.APP_PACKAGE", "com.whatsapp");
-                        } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-                            intent.putExtra("app_package", "com.whatsapp");
-                            // intent.putExtra("app_uid",);
-                        } else {
-                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                            intent.addCategory(Intent.CATEGORY_DEFAULT);
-                            intent.setData(Uri.parse("package:" + "com.whatsapp"));
 
-                        }
-                        flag=1;
-                        startActivityForResult(intent,01);
-                        return;
-                    }
-                }
+//                if (AppsAdapter.newChecked.contains("com.whatsapp")) {
+//                    Intent intent = new Intent();
+//                    if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+//                        intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+//                        intent.putExtra("android.provider.extra.APP_PACKAGE", "com.whatsapp");
+//                    } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                        int uid = 0;
+//                        try {
+//                            uid = getPackageManager().getApplicationInfo("com.whatsapp", 0).uid;
+//                        } catch (PackageManager.NameNotFoundException e) {
+//                            e.printStackTrace();
+//                        }
+//                        intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+//                        intent.putExtra("app_package", "com.whatsapp");
+//                         intent.putExtra("app_uid",uid);
+//                    } else {
+//                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                        intent.addCategory(Intent.CATEGORY_DEFAULT);
+//                        intent.setData(Uri.parse("package:" + "com.whatsapp"));
+//
+//                    }
+//                    flag=1;
+//                    startActivityForResult(intent,01);
+//                    return;
+//                }
+
 
                 startActivity(new Intent(Main2Activity.this,MainActivity.class));
                 finish();

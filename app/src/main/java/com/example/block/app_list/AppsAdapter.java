@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
@@ -79,6 +80,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
             checkBox=(SwitchCompat) view.findViewById(R.id.androidCheckBox);
             time=(TextView)view.findViewById(R.id.time);
             days=view.findViewById(R.id.days);
+            this.setIsRecyclable(false);
             //textView_App_Package_Name = (TextView) view.findViewById(R.id.Apk_Package_Name);
         }
     }
@@ -96,6 +98,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, int position){
 
+
         ApkInfoExtractor apkInfoExtractor = new ApkInfoExtractor(context1);
 
         final String ApplicationPackageName = (String) filteredList.get(position);
@@ -108,7 +111,10 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
         //viewHolder.textView_App_Package_Name.setText(ApplicationPackageName);
 
         viewHolder.imageView.setImageDrawable(drawable);
-
+        if(ApplicationPackageName.equalsIgnoreCase("com.whatsapp"))
+        {
+            viewHolder.timer.setVisibility(View.GONE);
+        }
         //Adding click listener on CardView to open clicked application directly from here .
         viewHolder.timer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,6 +132,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
                 }
             }
         });
+
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -148,6 +155,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
         Calendar calendar = Calendar.getInstance();
         Date date = calendar.getTime();
         String todaysDay= new SimpleDateFormat("EEE", Locale.ENGLISH).format(date.getTime());
+        viewHolder.checkBox.setOnCheckedChangeListener(null);
         if(MainActivity.list.contains(ApplicationPackageName))
 
         {
@@ -184,7 +192,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
 
                                         long currentTme= currentCalendar.getTimeInMillis();
 
-                                      //  long currentTme= currentTime.getTime();
+                                        //  long currentTme= currentTime.getTime();
 
                                         if(isTimeBetweenTwoTime(start,end,current))
                                         {
@@ -252,6 +260,10 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
 
 
         }
+        else
+        {
+            viewHolder.checkBox.setChecked(false);
+        }
 
         viewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -275,6 +287,49 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
                         e.printStackTrace();
                     }
                     editor.commit();
+                    if(ApplicationPackageName.equalsIgnoreCase("com.whatsapp"))
+                    {
+
+                        Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.setData(Uri.parse("package:" + ApplicationPackageName));
+                       // context1.startActivity(intent);
+
+   //                     Intent intent = new Intent();
+//                        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1)
+//                        {
+//                            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+//                            intent.putExtra("android.provider.extra.APP_PACKAGE", "com.whatsapp");
+//                        } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+//                        {
+//                            int uid = 0;
+//                            try {
+//                                uid = context1.getPackageManager().getApplicationInfo("com.whatsapp", 0).uid;
+//                            } catch (PackageManager.NameNotFoundException e) {
+//                                e.printStackTrace();
+//                            }
+//                            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+//                            intent.putExtra("app_package", "com.whatsapp");
+//                            intent.putExtra("app_uid", uid);
+//                        } else
+//                        {
+//                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                            intent.addCategory(Intent.CATEGORY_DEFAULT);
+//                            intent.setData(Uri.parse("package:" + "com.whatsapp"));
+//
+//                        }
+                        //context1.startActivity(intent);
+                        ((Activity) context1).startActivityForResult(intent,01);
+                        Intent intent1 = new Intent(context1,MyService.class);
+
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                        {
+                            context1.startForegroundService(intent1);
+                        }
+                        else
+                        {
+                            context1.startService(intent1);
+                        }
+                    }
 
                 }
                 else
@@ -318,23 +373,46 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
                     }
                     editor.commit();
 
-                    if(ApplicationPackageName.equalsIgnoreCase("com.whatsapp")) {
-                        Intent intent = new Intent();
-                        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
-                            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-                            intent.putExtra("android.provider.extra.APP_PACKAGE", "com.whatsapp");
-                        } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-                            intent.putExtra("app_package", "com.whatsapp");
-                            // intent.putExtra("app_uid",);
-                        } else {
-                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                            intent.addCategory(Intent.CATEGORY_DEFAULT);
-                            intent.setData(Uri.parse("package:" + "com.whatsapp"));
-                        }
+                    if(ApplicationPackageName.equalsIgnoreCase("com.whatsapp"))
+                    {
 
-                        context1.startActivity(intent);
+                        Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.setData(Uri.parse("package:" + ApplicationPackageName));
+                       // context1.startActivity(intent);
+//                    Intent intent = new Intent();
+//                    if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+//                        intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+//                        intent.putExtra("android.provider.extra.APP_PACKAGE", "com.whatsapp");
+//                    } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                        int uid = 0;
+//                        try {
+//                            uid = context1.getPackageManager().getApplicationInfo("com.whatsapp", 0).uid;
+//                        } catch (PackageManager.NameNotFoundException e) {
+//                            e.printStackTrace();
+//                        }
+//                        intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+//                        intent.putExtra("app_package", "com.whatsapp");
+//                        intent.putExtra("app_uid", uid);
+//                    } else {
+//                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                        intent.addCategory(Intent.CATEGORY_DEFAULT);
+//                        intent.setData(Uri.parse("package:" + "com.whatsapp"));
+//                    }
+
+                        ((Activity) context1).startActivityForResult(intent,01);
+                    Intent intent1 = new Intent(context1,MyService.class);
+
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    {
+                        context1.startForegroundService(intent1);
                     }
+                    else
+                    {
+                        context1.startService(intent1);
+                    }
+
+                }
+
 
                 }
             }
@@ -469,5 +547,17 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.ViewHolder> im
                     "Not a valid time, expecting HH:MM:SS format");
         }
 
+    }
+    public  void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Intent intent = new Intent(context1,MyService.class);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            context1.startForegroundService(intent);
+        }
+        else
+        {
+            context1.startService(intent);
+        }
     }
 }
